@@ -60,17 +60,26 @@ void applyFilter(std::string source, int noise_type, int filter_type) {
   cv::waitKey(0);
 
   //noise
-  cv::Mat NoiseImage(Image);
+  cv::Mat NoiseImage;
+  Image.copyTo(NoiseImage);
+
   if (noise_type == __WHITE_NOISE_) WhiteNoise(Image, NoiseImage);
-  if (noise_type != 0) {
+  if (noise_type != __NONE_) {
     cv::namedWindow("Source image", cv::WINDOW_AUTOSIZE);
     imshow("Source image", NoiseImage);
     cv::waitKey(0);
   }
 
   //filter
-  cv::Mat FiltredImage(Image);
-  if (filter_type == __MEDIAN_) MedianFilter(NoiseImage, FiltredImage);
+  cv::Mat FiltredImage;
+  Image.copyTo(FiltredImage);
+
+  if (filter_type == __ATRIM_) ATrimFilter(NoiseImage, FiltredImage, 1, 4);
+  if (filter_type != __NONE_) {
+    cv::namedWindow("Source image", cv::WINDOW_AUTOSIZE);
+    imshow("Source image", FiltredImage);
+    cv::waitKey(0);
+  }
 }
 
 
@@ -82,6 +91,8 @@ int main(int argc, char** argv) {
     std::string typeOfFilter = argv[2];
     if (typeOfFilter == "Median")
       applyFilter(source, default_noise, __MEDIAN_);
+    if (typeOfFilter == "ATrim") 
+      applyFilter(source, default_noise, __ATRIM_);
   } catch (const std::exception&) {
     std::cout << "Error! Wrong image source or type of filter" << std::endl;
   }
