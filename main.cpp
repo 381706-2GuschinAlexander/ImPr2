@@ -34,17 +34,23 @@ void applyFilter(std::string source, int noise_type, int filter_type) {
   if (filter_type != __NONE_) {
     //calculation
     double C_E_filtred = ConditionalExp(FiltredImage);
-    double C_E_noise = ConditionalExp(NoiseImage);
+    double C_E_source = ConditionalExp(Image);
     double dispersion_filtred = Dispersion(FiltredImage, C_E_filtred);
-    double dispersion_noise = Dispersion(NoiseImage, C_E_noise);
+    double dispersion_source = Dispersion(Image, C_E_source);
+    double cov = covFuncion(C_E_filtred, C_E_source, FiltredImage, Image);
+    double ssim_stat = ssim(C_E_filtred, C_E_source, 24, dispersion_filtred, dispersion_source, cov);
     //statistic 
     std::cout << "Conditional Expectation of filterd image= " << C_E_filtred
               << "\n";  
-    std::cout << "Conditional Expectation of noise image= " << C_E_noise
+    std::cout << "Conditional Expectation of source image= " << C_E_source
               << "\n";
     std::cout << "Dispersion of filterd image= " << dispersion_filtred
               << "\n";
-    std::cout << "Dispersion of noise image= " << dispersion_noise
+    std::cout << "Dispersion of source image= " << dispersion_source
+              << "\n";
+    std::cout << "Covariation of images= " << cov
+              << "\n";
+    std::cout << "ssim of images= " << ssim_stat
               << "\n";
     //pic
     cv::namedWindow("Source image", cv::WINDOW_AUTOSIZE);

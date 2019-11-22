@@ -22,3 +22,5 @@ void ATrimFilter(const cv::Mat& input, cv::Mat& output, int radius, int alpha);
 
 double ConditionalExp(const cv::Mat& input);
 double Dispersion(const cv::Mat& input, const double conditional_expectation);
+double covFuncion(double& mW1, double& mW2, cv::Mat& a, cv::Mat& b);
+double ssim(double& cE1, double& cE2, int bpp, double& dis1, double& dis2, double cov);

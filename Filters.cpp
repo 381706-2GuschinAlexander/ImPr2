@@ -80,3 +80,19 @@ double Dispersion(const cv::Mat& input,const double conditional_expectation) {
     }
   return sum / square;
 }
+
+double covFuncion(double& mW1, double& mW2, cv::Mat& a, cv::Mat& b){
+    double cov = 0;
+    for (int i = 0; i < a.rows; i++)
+        for (int j = 0; j < a.cols; j++)
+            cov = ((a.at<cv::Vec3b>(i, j)[0] + a.at<cv::Vec3b>(i, j)[1] + a.at<cv::Vec3b>(i, j)[2]) / 3 - mW1) *
+            ((b.at<cv::Vec3b>(i, j)[0] + b.at<cv::Vec3b>(i, j)[1] + b.at<cv::Vec3b>(i, j)[2]) / 3 - mW2);
+    cov = sqrt(cov);
+    return cov;
+}
+
+double ssim(double & cE1, double & cE2, int bpp, double & dis1, double & dis2, double cov){
+    double c1 = pow(0.01 * (pow(2, bpp) - 1), 2);
+    double c2 = pow(0.03 * (pow(2, bpp) - 1), 2);
+    return (2 * cE1 * cE2 + c1)*(2 * cov + c2)/((pow(cE1,2) + pow(cE2, 2) + c1)*(dis1 + dis2 + c2));
+}
