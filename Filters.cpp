@@ -58,6 +58,67 @@ void ATrimFilter(const cv::Mat& input, cv::Mat& output, int radius, int alpha) {
   }
 }
 
+void Monochrome(const cv::Mat& input, cv::Mat& output) {
+  for (int i = 0; i < input.rows; ++i)
+    for (int j = 0; j < input.cols; ++j) {
+      cv::Vec3b colorIn = input.at<cv::Vec3b>(i, j);
+      unsigned short colorOut = colorIn[0] * 0.0721 + colorIn[1] * 0.7154 + colorIn[2] * 0.2125;
+      output.at<cv::Vec3b>(i, j) = cv::Vec3b(colorOut, colorOut, colorOut);
+    }
+}
+
+unsigned char OtsuThreshold(const cv::Mat& input) {
+  int hist[256];
+  int sumOfIntensity = 0;
+  for (int i = 0; i < 256; ++i) hist[i] = 0;
+  for (int i = 0; i < input.rows; ++i)
+    for (int j = 0; j < input.cols; ++j) {
+      sumOfIntensity += input.at<cv::Vec3b>(i, j)[0];
+      hist[input.at<cv::Vec3b>(i, j)[0]]++;
+    }
+
+
+  int pixelCount = input.rows * input.cols;
+  int bestThresh = 0;
+  double bestSigma = 0.0;
+  int firstClassPixelCount = 0;
+  int64_t firstClassIntensitySum = 0;
+  for (int i = 0; i < 255; ++i) {
+    firstClassPixelCount += hist[i];
+    firstClassIntensitySum += i * hist[i];
+    double firstClassProb = firstClassPixelCount / static_cast<double>(pixelCount);
+    double secondClassProb = 1.0 - firstClassProb;
+    double firstClassMean = firstClassIntensitySum / static_cast<double>(firstClassPixelCount);
+    double secondClassMean = (sumOfIntensity - firstClassIntensitySum) /
+      static_cast<double>(pixelCount - firstClassPixelCount);
+    double meanDelta = firstClassMean - secondClassMean;
+    double sigma = firstClassProb * secondClassProb * pow(meanDelta, 2);
+    if (sigma > bestSigma) {
+      bestSigma = sigma;
+      bestThresh = i;
+    }
+  }
+  return bestThresh;
+}
+
+void Binarization(const cv::Mat& input, cv::Mat& output, unsigned char threshold) {
+  for (int i = 0; i < input.rows; ++i)
+    for (int j = 0; j < input.cols; ++j){
+      unsigned char currColor = input.at<cv::Vec3b>(i, j)[0];
+      unsigned char newColor;
+      newColor = currColor < threshold ? 0 : 255;
+      output.at<cv::Vec3b>(i, j) = cv::Vec3b(newColor, newColor, newColor);
+    }
+}
+
+void OtsuFilter(const cv::Mat & input, cv::Mat & output) {
+  Monochrome(input, output);
+  unsigned char threshold = OtsuThreshold(output);
+  cv::Mat newInput;
+  output.copyTo(newInput);
+  Binarization(newInput, output, threshold);
+}
+
 double ConditionalExp(const cv::Mat& input) {
   double sum = 0;
   int square = input.rows * input.cols;
@@ -91,8 +152,7 @@ double covFuncion(double& mW1, double& mW2, cv::Mat& a, cv::Mat& b){
     return cov;
 }
 
-double ssim(double & cE1, double & cE2, int bpp, double & dis1, double & dis2, double cov){
-    double c1 = pow(0.01 * (pow(2, bpp) - 1), 2);
-    double c2 = pow(0.03 * (pow(2, bpp) - 1), 2);
-    return (2 * cE1 * cE2 + c1)*(2 * cov + c2)/((pow(cE1,2) + pow(cE2, 2) + c1)*(dis1 + dis2 + c2));
+double ssim(double & cE1, double & cE2, double & dis1, double & dis2, double cov){
+    
+    return (2 * cE1 * cE2 + 0.0001)*(2 * cov + 0.0001)/((pow(cE1,2) + pow(cE2, 2) + 0.0001)*(dis1 + dis2 + 0.0001));
 }

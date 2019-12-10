@@ -21,8 +21,8 @@ void applyFilter(std::string source, int noise_type, int filter_type) {
 
   if (noise_type == __WHITE_NOISE_) WhiteNoise(Image, NoiseImage);
   if (noise_type != __NONE_) {
-    cv::namedWindow("Source image", cv::WINDOW_AUTOSIZE);
-    imshow("Source image", NoiseImage);
+    cv::namedWindow("Noise image", cv::WINDOW_AUTOSIZE);
+    imshow("Noise image", NoiseImage);
     cv::waitKey(0);
   }
 
@@ -31,6 +31,7 @@ void applyFilter(std::string source, int noise_type, int filter_type) {
   Image.copyTo(FiltredImage);
 
   if (filter_type == __ATRIM_) ATrimFilter(NoiseImage, FiltredImage, 1, 4);
+  if (filter_type == __OTSU_) OtsuFilter(Image, FiltredImage);
   if (filter_type != __NONE_) {
     //calculation
     double C_E_filtred = ConditionalExp(FiltredImage);
@@ -38,7 +39,7 @@ void applyFilter(std::string source, int noise_type, int filter_type) {
     double dispersion_filtred = Dispersion(FiltredImage, C_E_filtred);
     double dispersion_source = Dispersion(Image, C_E_source);
     double cov = covFuncion(C_E_filtred, C_E_source, FiltredImage, Image);
-    double ssim_stat = ssim(C_E_filtred, C_E_source, 24, dispersion_filtred, dispersion_source, cov);
+    double ssim_stat = ssim(C_E_filtred, C_E_source, dispersion_filtred, dispersion_source, cov);
     //statistic 
     std::cout << "Conditional Expectation of filterd image= " << C_E_filtred
               << "\n";  
@@ -53,8 +54,8 @@ void applyFilter(std::string source, int noise_type, int filter_type) {
     std::cout << "ssim of images= " << ssim_stat
               << "\n";
     //pic
-    cv::namedWindow("Source image", cv::WINDOW_AUTOSIZE);
-    imshow("Source image", FiltredImage);
+    cv::namedWindow("Filtred image", cv::WINDOW_AUTOSIZE);
+    imshow("Filtred image", FiltredImage);
     cv::waitKey(0);
   }
 }
@@ -70,6 +71,8 @@ int main(int argc, char** argv) {
       applyFilter(source, default_noise, __MEDIAN_);
     if (typeOfFilter == "ATrim") 
       applyFilter(source, default_noise, __ATRIM_);
+    if (typeOfFilter == "Otsu")
+      applyFilter(source, __NONE_, __OTSU_);
   } catch (const std::exception&) {
     std::cout << "Error! Wrong image source or type of filter" << std::endl;
   }
