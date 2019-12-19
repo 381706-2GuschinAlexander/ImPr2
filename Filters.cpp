@@ -123,41 +123,90 @@ void OtsuFilter(const cv::Mat& input, cv::Mat& output) {
   Binarization(newInput, output, threshold);
 }
 
-//void GrowFilter(const cv::Mat& input, cv::Mat& output, int thr) {
-//  int size = input.rows * input.cols;
-//  bool** ptr = new bool*[input.cols];
-//  for (int i = 0; i < input.cols; ++i) ptr[i] = new bool[input.rows];
-//
-//  while (1) {
-//    Point a = FindNew(ptr, input.rows, input.cols);
-//    StartGrow(ptr, input, output, thr, a.x, a.y, -1);
-//  }
+void GrowFilter(cv::Mat& image, int thr) {
+  Matrix A(image.rows, std::vector<int>(image.cols));
+  int count = 0;
+  for (int i = 0; i < image.rows; ++i)
+    for (int j = 0; j < image.cols; ++j) {
+      cv::Vec3b color = image.at<cv::Vec3b>(i, j);
+      int I = ToGray(color);
+
+      int I_left = 1000;
+      int I_up = 1000;
+
+      if (i > 0) {
+        cv::Vec3b tmp_color = image.at<cv::Vec3b>(i - 1, j);
+        I_left = ToGray(tmp_color);
+      }
+      if (j > 0) {
+        cv::Vec3b tmp_color = image.at<cv::Vec3b>(i, j - 1);
+        I_up = ToGray(tmp_color);
+      }
+
+      if (abs(I - I_left) > thr && abs(I - I_up) > thr) {
+        count++;
+        image.at<cv::Vec3b>(i, j)[0] = I;
+        image.at<cv::Vec3b>(i, j)[1] = I;
+        image.at<cv::Vec3b>(i, j)[2] = I;
+        A[i][j] = count;
+      } else if (abs(I - I_left) < thr && abs(I - I_up) < thr && I_left != I_up) {
+        if (abs(I_up - I_left) < thr) {
+          count++;
+          int min = 0;
+          Merge(image, A[i - 1][j], A[i][j - 1], I, i, j, A, count);
+          image.at<cv::Vec3b>(i, j)[0] = I;
+          image.at<cv::Vec3b>(i, j)[1] = I;
+          image.at<cv::Vec3b>(i, j)[2] = I;
+          A[i][j] = count;
+        } else {
+          if (abs(I - I_left) < abs(I - I_up)) {
+            image.at<cv::Vec3b>(i, j)[0] = I_left;
+            image.at<cv::Vec3b>(i, j)[1] = I_left;
+            image.at<cv::Vec3b>(i, j)[2] = I_left;
+            A[i][j] = A[i - 1][j];
+          } else {
+            image.at<cv::Vec3b>(i, j)[0] = I_up;
+            image.at<cv::Vec3b>(i, j)[1] = I_up;
+            image.at<cv::Vec3b>(i, j)[2] = I_up;
+            A[i][j] = A[i][j - 1];
+          }
+        }
+      } else if (abs(I - I_left) < thr) {
+        image.at<cv::Vec3b>(i, j)[0] = I_left;
+        image.at<cv::Vec3b>(i, j)[1] = I_left;
+        image.at<cv::Vec3b>(i, j)[2] = I_left;
+        A[i][j] = A[i - 1][j];
+      } else if (abs(I - I_up) < thr) {
+        image.at<cv::Vec3b>(i, j)[0] = I_up;
+        image.at<cv::Vec3b>(i, j)[1] = I_up;
+        image.at<cv::Vec3b>(i, j)[2] = I_up;
+        A[i][j] = A[i][j - 1];
+      }
+
+    }
+}
+
+void Merge(cv::Mat& image, int reg1, int reg2, int nI, int end_x, int end_y, Matrix& A, int count) { 
+  for (int i = 0; i < image.rows; ++i)
+    for (int j = 0; j < image.cols; ++j) {
+      if (A[i][j] == reg1 || A[i][j] == reg2) {
+        image.at<cv::Vec3b>(i, j)[0] = nI;
+        image.at<cv::Vec3b>(i, j)[1] = nI;
+        image.at<cv::Vec3b>(i, j)[2] = nI;
+        A[i][j] = count;
+    }
+    if (i == end_x && j == end_y) return;
+  }
+}
+
+//double Distance(const cv::Vec3b&  f_c, const cv::Vec3b& s_c) { 
+//  return sqrt(pow(f_c[0] - s_c[0], 2) + pow(f_c[1] - s_c[1], 2) +
+//              pow(f_c[2] - s_c[2], 2));
 //}
-//
-//Point FindNew(bool** ptr, int rows, int cols) {
-//  Point res(-1, -1);
-//  for (int i = 0; i < cols; ++i)
-//    for (int k = 0; k < rows; ++k)
-//      if (ptr[i][k] == false) {
-//        res.x = i;
-//        res.y = k;
-//        break;
-//      }
-//
-//  return res;
-//}
-//
-//void StartGrow(bool** vec, const cv::Mat& input, cv::Mat& output, int thr,
-//               int x, int y, int I) {
-//  int tmpI = I;
-//  vec[x][y] = true;
-//  cv::Vec3b color1 = input.at<cv::Vec3b>(x, y);
-//  if (I == -1) tmpI = (color1[0] + color1[1] + color1[2]) / 3;
-//  if (x - 1 >= 0 && vec[x - 1][y] == true) {
-//    cv::Vec3b tmpColor = input.at<cv::Vec3b>(x - 1, y);
-//    if ()
-//  }
-//}
+
+int ToGray(const cv::Vec3b& color) {
+  return (color[0] + color[1] + color[2])/3;
+}
 
 double ConditionalExp(const cv::Mat& input) {
   double sum = 0;

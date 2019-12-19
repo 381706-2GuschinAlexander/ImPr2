@@ -32,7 +32,7 @@ void applyFilter(std::string source, int noise_type, int filter_type) {
 
   if (filter_type == __ATRIM_) ATrimFilter(NoiseImage, FiltredImage, 1, 4);
   if (filter_type == __OTSU_) OtsuFilter(Image, FiltredImage);
-//  if (filter_type == __GROW_) GrowFilter(Image, FiltredImage, 10);
+  if (filter_type == __GROW_) GrowFilter(FiltredImage, 20);
     if (filter_type != __NONE_ && filter_type < 7) {
       // calculation
       double C_E_filtred = ConditionalExp(FiltredImage);

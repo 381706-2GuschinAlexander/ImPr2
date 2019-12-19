@@ -9,6 +9,7 @@
 #define _USE_MATH_DEFINES
 
 #define __CHANCE_ 33
+#define __MAX_DISTANCE_ 441.67295593 + 1
 
 #define __WHITE_NOISE_ 1
 #define __SALT_PEPPER_ 3
@@ -20,15 +21,7 @@
 #define __OTSU_ 7
 #define __GROW_ 9
 
-struct Point {
-  int x;
-  int y;
-
-  Point(int _x, int _y){ 
-    x = _x;
-    y = _y;
-  }
-};
+typedef std::vector<std::vector<int>> Matrix;
 
 void WhiteNoise(const cv::Mat& input, cv::Mat& output);
 
@@ -42,10 +35,10 @@ unsigned char OtsuThreshold(const cv::Mat& input);
 void Binarization(const cv::Mat& input, cv::Mat& output, unsigned char threshold);
 void OtsuFilter(const cv::Mat& input, cv::Mat& output);
 
-//void GrowFilter(const cv::Mat& input, cv::Mat& output, int thr);
-//Point FindNew(bool** ptr, int rows, int cols);
-//void StartGrow(bool** vec, const cv::Mat& input, cv::Mat& output, int thr,
-//               int x, int y, int I);
+void GrowFilter(cv::Mat& image, int thr);
+void Merge(cv::Mat& image, int reg1, int reg2, int nI, int end_x, int end_y,
+           Matrix& A, int count);
+int ToGray(const cv::Vec3b& color);
 
 // unity
 double ConditionalExp(const cv::Mat& input);
