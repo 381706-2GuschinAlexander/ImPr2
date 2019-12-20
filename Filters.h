@@ -1,7 +1,7 @@
 #pragma once
+#include <math.h>
 #include <ctime>
 #include <random>
-#include <math.h>
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
@@ -16,6 +16,7 @@
 #define __ATRIM_ 6
 
 #define __OTSU_ 7
+#define __HUFFMAN 8
 
 void WhiteNoise(const cv::Mat& input, cv::Mat& output);
 
@@ -26,8 +27,16 @@ void ATrimFilter(const cv::Mat& input, cv::Mat& output, int radius, int alpha);
 // 3-rd lab
 void Monochrome(const cv::Mat& input, cv::Mat& output);
 unsigned char OtsuThreshold(const cv::Mat& input);
-void Binarization(const cv::Mat& input, cv::Mat& output, unsigned char threshold);
+void Binarization(const cv::Mat& input, cv::Mat& output,
+                  unsigned char threshold);
 void OtsuFilter(const cv::Mat& input, cv::Mat& output);
+
+// 4-th lab
+int fib(int n);
+void histPull(const cv::Mat& sourse, int* hist, unsigned char& count);
+void strconcat(char* str, char* paterncode, char add);
+void probabilitisOfIntensity(int* hist, double* res, int countOfPixels);
+void HuffmanCompression(const cv::Mat& input, cv::Mat output);
 
 // unity
 double ConditionalExp(const cv::Mat& input);

@@ -32,6 +32,7 @@ void applyFilter(std::string source, int noise_type, int filter_type) {
 
   if (filter_type == __ATRIM_) ATrimFilter(NoiseImage, FiltredImage, 1, 4);
   if (filter_type == __OTSU_) OtsuFilter(Image, FiltredImage);
+  if (filter_type == __HUFFMAN) HuffmanCompression(Image, FiltredImage);
   if (filter_type != __NONE_) {
     //calculation
     double C_E_filtred = ConditionalExp(FiltredImage);
@@ -73,6 +74,8 @@ int main(int argc, char** argv) {
       applyFilter(source, default_noise, __ATRIM_);
     if (typeOfFilter == "Otsu")
       applyFilter(source, __NONE_, __OTSU_);
+    if (typeOfFilter == "Huffman")
+      applyFilter(source, __NONE_, __HUFFMAN);
   } catch (const std::exception&) {
     std::cout << "Error! Wrong image source or type of filter" << std::endl;
   }
